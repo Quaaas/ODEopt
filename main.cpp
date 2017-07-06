@@ -282,15 +282,15 @@ int main() {
 	};
 
 
-	std::cout << "value_f:  " << value_f(x) << std::endl;
-	std::cout << "derivative_f:  " << derivative_f(x).size() << std::endl;
-	std::cout << "secderivative_f:  " << secDerivative_f(x).rows() << "x" << secDerivative_f(x).cols() << std::endl;
-	std::cout << "value_c:  " << value_c(x).size()  << std::endl;
-	std::cout << "derivative_c:  " << derivative_c(x).rows() << "x" << derivative_c(x).cols() << std::endl;
-	std::cout << "secderivative_c:  " << secDerivative_c(x,x).rows() << "x" << secDerivative_c(x,x).cols() << std::endl;
-	std::cout << "gramian:  " << gramian(x).rows() << "x" << gramian(x).cols() << std::endl;
-	std::cout << "x:  " << x.size() << std::endl;
-
+//	std::cout << "value_f:  " << value_f(x) << std::endl;
+//	std::cout << "derivative_f:  " << derivative_f(x).size() << std::endl;
+//	std::cout << "secderivative_f:  " << secDerivative_f(x).rows() << "x" << secDerivative_f(x).cols() << std::endl;
+//	std::cout << "value_c:  " << value_c(x).size()  << std::endl;
+//	std::cout << "derivative_c:  " << derivative_c(x).rows() << "x" << derivative_c(x).cols() << std::endl;
+//	std::cout << "secderivative_c:  " << secDerivative_c(x,x).rows() << "x" << secDerivative_c(x,x).cols() << std::endl;
+//	std::cout << "gramian:  " << gramian(x).rows() << "x" << gramian(x).cols() << std::endl;
+//	std::cout << "x:  " << x.size() << std::endl;
+//
 
 
 
@@ -316,6 +316,6 @@ int main() {
 //	cs.setVerbosityLevel(1);
 //	cs.setMaxSteps(10);
 //    auto result = cs(x0);
-//	//L_T(x0);
+//	L_T(x0);
 
 }

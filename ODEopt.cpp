@@ -158,27 +158,23 @@ Eigen::VectorXd ODEopt::cs_f_y(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
 
-
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_u_;j++)
+			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					U_b[k](j) += Eval[k](s)*U[s](j);
-				}
-
+				U_b[k] += Eval[k](s)*U[s];
 			}
 		}
 
@@ -235,17 +231,15 @@ Eigen::VectorXd ODEopt::cs_f_u(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
-
 
 		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
@@ -283,7 +277,7 @@ Eigen::VectorXd ODEopt::cs_f_derivative(const Eigen::VectorXd& x)
 	Eigen::VectorXd result(N_col_*dim_y_*(N_grid_-1) + dim_y_ + N_col_*dim_u_*(N_grid_-1));
 
 
-	result.tail(N_col_*dim_u_*(N_grid_-1)) = cs_f_u(x);
+	result << cs_f_y(x), cs_f_u(x);
 
 
 	return result;
@@ -326,28 +320,23 @@ Eigen::MatrixXd ODEopt::cs_J_yy(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
-
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
 
-
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_u_;j++)
+			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					U_b[k](j) += Eval[k](s)*U[s](j);
-				}
-
+				U_b[k] += Eval[k](s)*U[s];
 			}
 		}
 
@@ -394,36 +383,29 @@ Eigen::MatrixXd ODEopt::cs_J_uu(const Eigen::VectorXd& x)
 
 	for(int i = 0;i<N_grid_-1;i++)
 	{
-
-
 		for(int j = 0; j < N_col_;j++)
 		{
 			X[j] = get_y_ij(i,j,x);
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
-
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
 
-
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_u_;j++)
+			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					U_b[k](j) += Eval[k](s)*U[s](j);
-				}
-
+				U_b[k] += Eval[k](s)*U[s];
 			}
 		}
 
@@ -472,36 +454,29 @@ Eigen::MatrixXd ODEopt::cs_J_uy(const Eigen::VectorXd& x)
 
 	for(int i = 0;i<N_grid_-1;i++)
 	{
-
-
 		for(int j = 0; j < N_col_;j++)
 		{
 			X[j] = get_y_ij(i,j,x);
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
-
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
 
-
+		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_u_;j++)
+			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					U_b[k](j) += Eval[k](s)*U[s](j);
-				}
-
+				U_b[k] += Eval[k](s)*U[s];
 			}
 		}
 
