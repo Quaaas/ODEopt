@@ -21,13 +21,10 @@ ODEopt::ODEopt(
 		std::vector<double> grid,
 		int dim_y,
 		int dim_u,
-		int dim_r,
-		Eigen::VectorXd y,
-		Eigen::VectorXd u,
-		Eigen::VectorXd p
+		int dim_r
 		) : g_(g), dyg_(dyg), dug_(dug), dyyg_(dyyg), duug_(duug), dyug_(dyug), f_(f), duf_(duf), dyf_(dyf),
 			pduuf_(pduuf), pduyf_(pduyf), pdyyf_(pdyyf), r_(r), dar_(dar), dbr_(dbr), c_(c), grid_(grid), dim_y_(dim_y),
-			dim_u_(dim_u), dim_r_(dim_r), y_(y), u_(u), p_(p)
+			dim_u_(dim_u), dim_r_(dim_r)
 	{
 		N_grid_ = grid.size();
 		N_col_ = c.size();
@@ -44,7 +41,7 @@ Eigen::VectorXd ODEopt::get_y_ij(int i,int j,const Eigen::VectorXd& x)
 Eigen::VectorXd ODEopt::get_u_ij(int i,int j,const Eigen::VectorXd& x)
 {
 	Eigen::VectorXd u(dim_u_);
-	u = x.segment(y_.size() + i*N_col_*dim_u_ + j*dim_u_,dim_u_);
+	u = x.segment((N_grid_-1)*dim_y_*N_col_ + dim_y_ + i*N_col_*dim_u_ + j*dim_u_,dim_u_);
 
 	return u;
 }
@@ -55,6 +52,8 @@ double ODEopt::cs_f(const Eigen::VectorXd& x)
 	double result = 0;
 	double temp_res = 0;
 	double h = 0;
+
+	// quadrature formula
 	Eigen::VectorXd omega(3);
 	Eigen::VectorXd b(3);
 	omega << 5.0/18, 4.0/9, 5.0/18;
@@ -85,35 +84,31 @@ double ODEopt::cs_f(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
+		// calculate points at b
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_y_;j++)
+			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					X_b[k](j) += Eval[k](s)*X[s](j);
-				}
-
+				X_b[k] += Eval[k](s)*X[s];
 			}
 		}
 
-
 		for(int k = 0; k < N_col_;k++)
 		{
-			for(int j = 0; j <dim_u_;j++)
+			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
+			for(int s = 0; s < N_col_;s++)
 			{
-				for(int s = 0; s < N_col_;s++)
-				{
-					U_b[k](j) += Eval[k](s)*U[s](j);
-				}
-
+				U_b[k] += Eval[k](s)*U[s];
 			}
 		}
 
+		// quadrature formula
 		for(int k = 0; k < b.size();k++)
 		{
-			temp_res += omega(k)*g_(X[k],U[k]);
+			temp_res += omega(k)*g_(X_b[k],U_b[k]);
 		}
+
 		result += temp_res*h;
 		temp_res = 0;
 	}
@@ -158,7 +153,6 @@ Eigen::VectorXd ODEopt::cs_f_y(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
-		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
 			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
@@ -168,7 +162,6 @@ Eigen::VectorXd ODEopt::cs_f_y(const Eigen::VectorXd& x)
 			}
 		}
 
-		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
 			U_b[k] = Eigen::VectorXd::Zero(dim_u_);
@@ -178,8 +171,6 @@ Eigen::VectorXd ODEopt::cs_f_y(const Eigen::VectorXd& x)
 			}
 		}
 
-
-		//G, tau ausrechnen
 		for(int k =0;k<N_col_;k++)
 		{
 			g[k] = dyg_(X_b[k],U_b[k]);
@@ -187,8 +178,6 @@ Eigen::VectorXd ODEopt::cs_f_y(const Eigen::VectorXd& x)
 
 		result.segment(i*N_col_*dim_y_,dim_y_*N_col_) = Polynomial::intLocalOperator_lin(grid_[i+1]-grid_[i],g,b);
 	}
-
-
 
 	return result;
 }
@@ -231,7 +220,6 @@ Eigen::VectorXd ODEopt::cs_f_u(const Eigen::VectorXd& x)
 			U[j] = get_u_ij(i,j,x);
 		}
 
-		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
 			X_b[k] = Eigen::VectorXd::Zero(dim_y_);
@@ -241,7 +229,6 @@ Eigen::VectorXd ODEopt::cs_f_u(const Eigen::VectorXd& x)
 			}
 		}
 
-		//Prototyp für richtiges
 		for(int k = 0; k < N_col_;k++)
 		{
 			U_b[k] = Eigen::VectorXd::Zero(dim_u_);

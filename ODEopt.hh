@@ -27,46 +27,36 @@ public:
 			std::vector<double> grid,
 			int dim_y,
 			int dim_u,
-			int dim_r,
-			Eigen::VectorXd y,
-			Eigen::VectorXd u,
-			Eigen::VectorXd p
+			int dim_r
 	);
 
 
-	//Vektor der Kollokationspunkte
+	// collocation points
 	Eigen::VectorXd c_;
 
-	//Gitter
+	// grid
 	std::vector<double> grid_;
 
-	//Anzahl der Gitterpunkte
+	// number of gridpoints
 	int N_grid_;
 
-	//Dimension der Differentialgleichung
+	// order of ODE
 	int dim_y_;
 
-	// Dimension der Kontrollfunktion
+	// dimension of control variable
 	int dim_u_;
 
-	// Anzahl der Kollokationspunkte
+	// number of collocation points
 	int N_col_;
 
-	//Dimension der Randbedingungen
+	// number of boundary conditions
 	int dim_r_;
 
-	//Zustandsvector
-	Eigen::VectorXd y_;
 
-	//Kontrollfunktion
-	Eigen::VectorXd u_;
-
-	//Lagrange Multiplikator
-	Eigen::VectorXd p_;
 
 	// functions for OC problem with ODEs
 
-	//Kostenfunktion g
+	// cost function
 	std::function<double(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> g_;
 	std::function<::Eigen::VectorXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dyg_;
 	std::function<::Eigen::VectorXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dug_;
@@ -74,7 +64,7 @@ public:
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> duug_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dyug_;
 
-	//Rechte Seite der Differentialgleichung
+	// ODE
 	std::function<::Eigen::VectorXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> f_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> duf_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dyf_;
@@ -82,17 +72,16 @@ public:
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> pduyf_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> pdyyf_;
 
-	//Randbedingung
+	// boundary conditions
 	std::function<::Eigen::VectorXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> r_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dar_;
 	std::function<::Eigen::MatrixXd(const ::Eigen::VectorXd&, const ::Eigen::VectorXd&)> dbr_;
 
-	//
 
-
-
-	//Memberfunktionen
+	// memberfunctions
 	// x=(y,u)
+
+	// functions for composite step solver
 	double cs_f(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_derivative(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_derivative_test(const Eigen::VectorXd& x);
@@ -102,15 +91,17 @@ public:
 	Eigen::MatrixXd cs_c_secDerivative(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
 	Eigen::MatrixXd cs_gramian(const Eigen::VectorXd& x);
 
+	// auxiliary functions
 
-	Eigen::VectorXd get_y_i(int i, const Eigen::VectorXd& x);
+	// get y_ij, both indices starting at 0
 	Eigen::VectorXd get_y_ij(int i, int j, const Eigen::VectorXd& x);
+	// get u_ij, both indices starting at 0
 	Eigen::VectorXd get_u_ij(int i, int j, const Eigen::VectorXd& x);
+
 	Eigen::VectorXd cs_f_y(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_u(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_J_uu(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_J_yy(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_J_yy_2(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_J_uy(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_y(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_u(const Eigen::VectorXd& x);
