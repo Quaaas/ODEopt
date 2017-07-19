@@ -593,3 +593,70 @@ Eigen::MatrixXd ODEopt::cs_c_derivative(const Eigen::VectorXd& x)
 	result << cs_c_y(x), cs_c_u(x);
 	return result;
 }
+
+Eigen::MatrixXd ODEopt::cs_M_y(const Eigen ::VectorXd& x)
+{
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_ ,dim_y_*N_col_*(N_grid_-1) + dim_y_);
+	std::vector<Eigen::MatrixXd> G;
+
+	for(int k =0;k<N_col_;k++)
+	{
+		G.push_back(Eigen::MatrixXd::Zero(dim_y_,dim_y_));
+	}
+
+	Eigen::VectorXd b(3);
+	b << 1.0/2.0 - sqrt(15)/10,  1.0/2.0,  1.0/2.0 + sqrt(15)/10;
+
+	for(int i = 0;i<N_grid_-1;i++)
+	{
+		//G, tau ausrechnen
+		for(int k =0;k<N_col_;k++)
+		{
+			G[k] = Eigen::MatrixXd::Identity(dim_y_,dim_y_);
+		}
+
+		result.block(i*N_col_*dim_y_,i*N_col_*dim_y_,dim_y_*N_col_,dim_y_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+	}
+	return result;
+}
+
+Eigen::MatrixXd ODEopt::cs_M_u(const Eigen::VectorXd& x)
+{
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*N_col_*(N_grid_-1),dim_u_*N_col_*(N_grid_-1));
+	std::vector<Eigen::MatrixXd> G;
+
+	for(int k =0;k<N_col_;k++)
+	{
+		G.push_back(Eigen::MatrixXd::Zero(dim_u_,dim_u_));
+	}
+
+	Eigen::VectorXd b(3);
+	b << 1.0/2.0 - sqrt(15)/10,  1.0/2.0,  1.0/2.0 + sqrt(15)/10;
+
+	for(int i = 0;i<N_grid_-1;i++)
+	{
+		//G, tau ausrechnen
+		for(int k =0;k<N_col_;k++)
+		{
+			G[k] = Eigen::MatrixXd::Identity(dim_u_,dim_u_);
+		}
+
+		result.block(i*N_col_*dim_u_,i*N_col_*dim_u_,dim_u_*N_col_,dim_u_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+
+	}
+
+	return result;
+}
+
+Eigen::MatrixXd ODEopt::cs_M(const Eigen:: VectorXd& x)
+{
+	Eigen::MatrixXd M_y= ODEopt::cs_M_y(x);
+	Eigen::MatrixXd M_u = ODEopt::cs_M_u(x);
+
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(M_u.rows()+M_y.rows(), M_u.cols() + M_y.cols());
+
+	Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(M_y.rows(),M_u.cols());
+	result << M_y, Z, Z.transpose(), M_u;
+
+	return result;
+}

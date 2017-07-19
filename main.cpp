@@ -16,20 +16,22 @@
 #include <fstream>
 #include <ctime>
 
+#define EIGEN_INITIALIZE_MATRICES_BY_ZERO
+
 
 using Vector = Eigen::VectorXd;
 using Matrix = Eigen::MatrixXd;
 
 std::function<double(Vector,Vector)> g = [] (const Vector& x, const Vector& u)
 		{
-			return u(0)*u(0);
+			return u(0)*u(0) + x(0)*x(0) + x(1)*x(1);
 		};
 
 std::function<Vector(Vector,Vector)> dxg = [] (const Vector& x, const Vector& u)
 		{
 			Vector d(2);
-			d(0) = 0;
-			d(1) = 0;
+			d(0) = 2*x(0);
+			d(1) = 2*x(1);
 			return d;
 		};
 
@@ -43,10 +45,10 @@ std::function<Vector(Vector,Vector)> dug = [] (const Vector& x, const Vector& u)
 std::function<Matrix(Vector,Vector)> dxxg = [] (const Vector& x, const Vector& u)
 		{
 			Matrix D(2,2);
-			D(0,0) = 0;
+			D(0,0) = 2;
 			D(1,0) = 0;
 			D(0,1) = 0;
-			D(1,1) = 0;
+			D(1,1) = 2;
 			return D;
 		};
 
@@ -154,7 +156,7 @@ int main() {
 	c << 0,(1.0/2-sqrt(3.0)/6),(1.0/2+sqrt(3.0)/6);
 
 	//Gitter
-	int N = 30;
+	int N = 7;
 	std::vector<double> grid(N,0);
 	for(int i = 0;i<N;i++){
 		grid[i] = (double) i*1/(N-1);
@@ -186,28 +188,30 @@ int main() {
 		p0(i) = 1;
 	}
 
-	Vector x(y0.size() + u0.size() + p0.size());
-	x << y0 , u0, p0;
+	Vector x_init(y0.size() + u0.size() + p0.size());
+	x_init << y0 , u0, p0;
 
 	auto odeopt = ODEopt(g,dxg,dug,dxxg,duug,dxug,f,duf,dxf,pduuf,pduxf,pdxxf,
 						 r,dxr,dyr,c,grid,dim_y,dim_u,dim_r);
 
 //	//Linear Test
 //	Eigen::MatrixXd MAT((N-1)*(dim_y*2+dim_u)*c.size() + dim_y + dim_r,(N-1)*(dim_y*2+dim_u)*c.size() + dim_y + dim_r);
-//	Eigen::VectorXd RHS(x.size());
-//	Eigen::MatrixXd J = odeopt.cs_f_secDerivative(x);
-//	Eigen::MatrixXd C = odeopt.cs_c_derivative(x);
+//	Eigen::VectorXd RHS(x_init.size());
+//	Eigen::MatrixXd J = odeopt.cs_f_secDerivative(x_init);
+//	Eigen::MatrixXd C = odeopt.cs_c_derivative(x_init);
 //
 //
-//	Eigen::VectorXd u_temp(y0.size() + u0.size());
-//	u_temp << Eigen::VectorXd::Zero(y0.size()), u0;
+
 //
 //
-//	MAT<< J, C.transpose(), C, Eigen::MatrixXd::Zero((N-1)*dim_y*c.size() + dim_r,(N-1)*dim_y*c.size() + dim_r);
-//	RHS << odeopt.cs_f_derivative(x) - C.transpose()*p0, -odeopt.cs_c(x);
-//
-//	clock_t begin = clock();
-//
+	//MAT<< J, C.transpose(), C, Eigen::MatrixXd::Zero((N-1)*dim_y*c.size() + dim_r,(N-1)*dim_y*c.size() + dim_r);
+	//RHS << -odeopt.cs_f_derivative(x_init) - C.transpose()*p0, -odeopt.cs_c(x_init);
+//	-odeopt.cs_f_derivative(x_init);
+//	 -C.transpose()*p0;
+//	 -odeopt.cs_c(x_init);
+//	std::cout << RHS << std::endl;
+//	//clock_t begin = clock();
+
 //
 //	Eigen::VectorXd res = MAT.householderQr().solve(RHS);
 //
@@ -227,9 +231,9 @@ int main() {
 //	myfile2.close();
 //
 //	std::ofstream myfile3;
-//	myfile2.open ("matrix.txt");
-//	myfile2 << MAT;
-//	myfile2.close();
+//	myfile3.open ("matrix.txt");
+//	myfile3 << MAT;
+//	myfile3.close();
 
 
 
@@ -241,8 +245,8 @@ int main() {
 
 	std::function<::Eigen::VectorXd(::Eigen::VectorXd)> derivative_f = [&](const ::Eigen::VectorXd& x)
 	{
-
-		return odeopt.cs_f_derivative(x);
+		Eigen::VectorXd res = odeopt.cs_f_derivative(x);
+		return res;
 	};
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> secDerivative_f = [&](const ::Eigen::VectorXd& x)
@@ -252,7 +256,8 @@ int main() {
 
 	std::function<::Eigen::VectorXd(::Eigen::VectorXd)> value_c = [&](const ::Eigen::VectorXd& x)
 	{
-		return odeopt.cs_c(x);
+		Eigen::VectorXd res = odeopt.cs_c(x);
+		return res;
 	 };
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> derivative_c = [&](const ::Eigen::VectorXd& x)   // c'(x)
@@ -268,41 +273,43 @@ int main() {
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> gramian = [&](const ::Eigen::VectorXd& x)
 	{
-	    return odeopt.cs_f_secDerivative(x);
+	    return odeopt.cs_M(x);
 	};
 
 
-//	std::cout << "value_f:  " << value_f(x) << std::endl;
-//	std::cout << "derivative_f:  " << derivative_f(x).size() << std::endl;
-//	std::cout << "secderivative_f:  " << secDerivative_f(x).rows() << "x" << secDerivative_f(x).cols() << std::endl;
-//	std::cout << "value_c:  " << value_c(x).size()  << std::endl;
-//	std::cout << "derivative_c:  " << derivative_c(x).rows() << "x" << derivative_c(x).cols() << std::endl;
-//	std::cout << "secderivative_c:  " << secDerivative_c(x,x).rows() << "x" << secDerivative_c(x,x).cols() << std::endl;
-//	std::cout << "gramian:  " << gramian(x).rows() << "x" << gramian(x).cols() << std::endl;
-//	std::cout << "x:  " << x.size() << std::endl;
-
-
+//
 	using namespace Spacy;
 
 	std::vector<std::shared_ptr< VectorSpace > > spaces(2);
 
-	spaces[0] = std::make_shared<Spacy::VectorSpace>(Spacy::Rn::makeHilbertSpace(263));
-	spaces[1] = std::make_shared<Spacy::VectorSpace>(Spacy::Rn::makeHilbertSpace(178));
+	spaces[0] = std::make_shared<Spacy::VectorSpace>(Spacy::Rn::makeHilbertSpace(y0.size() + u0.size()));
+	spaces[1] = std::make_shared<Spacy::VectorSpace>(Spacy::Rn::makeHilbertSpace(p0.size()));
 
 	auto domain = Spacy::ProductSpace::makeHilbertSpace(spaces);
 
 	Spacy::Rn::TangentialStepFunctional L_T(value_f,derivative_f,secDerivative_f,value_c,derivative_c,secDerivative_c,domain);
 	Spacy::Rn::NormalStepFunctional L_N(L_T,gramian);
 
-	auto x0=domain.creator()(&domain);
-	Spacy::Rn::copy(x,x0);
-
+	//auto x0=domain.creator()(&domain);
+	auto x0 = zero(domain);
+	Spacy::Rn::copy(x_init,x0);
 
 	auto cs = Spacy::CompositeStep::AffineCovariantSolver( L_N , L_T , domain );
-	//cs.setRelativeAccuracy(1e-6);
-	cs.setVerbosityLevel(3);
-	cs.setMaxSteps(10);
+	cs.setRelativeAccuracy(1e-6);
+	cs.setVerbosityLevel(1);
+	//cs.setMaxSteps(3);
     auto result = cs(x0);
-	L_T(x0);
+    Spacy::Rn::copy(result,x_init);
+//
+	 std::cout << "---------------------" << std::endl;
+     std::cout << x_init << std::endl;
+//
+//    std::ofstream myfile4;
+//    myfile4.open ("x_spacy.txt");
+//    myfile4 << x;
+//    myfile4.close();
+//
+//
+//    myfile4 << x << std::endl;
 
 }

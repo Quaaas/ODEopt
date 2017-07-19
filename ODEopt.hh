@@ -90,7 +90,7 @@ public:
 	Eigen::MatrixXd cs_c_derivative(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_secDerivative(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
 	Eigen::MatrixXd cs_gramian(const Eigen::VectorXd& x);
-
+	Eigen::MatrixXd cs_M(const Eigen:: VectorXd& x);
 	// auxiliary functions
 
 	// get y_ij, both indices starting at 0
@@ -105,5 +105,8 @@ public:
 	Eigen::MatrixXd cs_J_uy(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_y(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_u(const Eigen::VectorXd& x);
+	Eigen::MatrixXd cs_M_y(const Eigen::VectorXd& x);
+	Eigen::MatrixXd cs_M_u(const Eigen::VectorXd& x);
+
 };
 
