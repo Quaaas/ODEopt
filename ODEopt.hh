@@ -107,6 +107,9 @@ public:
 	Eigen::MatrixXd cs_c_u(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_M_y(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_M_u(const Eigen::VectorXd& x);
+	Eigen::MatrixXd cs_c_yy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::MatrixXd cs_c_uu(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::MatrixXd cs_c_uy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
 
 };
 

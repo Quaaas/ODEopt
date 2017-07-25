@@ -525,9 +525,6 @@ Eigen::VectorXd ODEopt::cs_c(const Eigen::VectorXd& x)
 		f.segment(i*dim_y_,dim_y_) = f_u_y[i];
 	}
 
-	//std::cout <<  r_(get_y_ij(0,0,x),get_y_ij(N_grid_-1,0,x))<< std::endl;
-
-
 	result << f-y_der.head(y_der.size()-dim_y_), r_(get_y_ij(0,0,x),get_y_ij(N_grid_-1,0,x));
 	return result;
 }
@@ -554,11 +551,14 @@ Eigen::MatrixXd ODEopt::cs_c_y(const Eigen::VectorXd& x)
 		{
 			F[k] = dyf_(get_y_ij(i,k+1,x),get_u_ij(i,k+1,x));
 		}
-
+        
+       // std::cout << Polynomial::collocationLocal(F,c_,dim_y_).rows() << "    " << Polynomial::collocationLocal(F,c_,dim_y_).cols() << std::endl;
+       // std::cout << i*dim_y_*N_col_ << "    " << i*dim_y_*(N_col_) << std::endl;
+        
 		result.block(i*dim_y_*N_col_,i*dim_y_*(N_col_),dim_y_*N_col_,dim_y_*(N_col_ +1)) =
 				Polynomial::collocationLocal(F,c_,dim_y_);
 	}
-
+    
 	result.bottomLeftCorner(dim_r_,dim_y_) = dar_(get_y_ij(0,0,x), get_y_ij(N_col_,0,x));
 	result.bottomRightCorner(dim_r_,dim_y_) = dbr_(get_y_ij(0,0,x), get_y_ij(N_col_,0,x));
 	Eigen::MatrixXd D = Polynomial::diffOperator(grid_,c_,dim_y_);
@@ -657,6 +657,77 @@ Eigen::MatrixXd ODEopt::cs_M(const Eigen:: VectorXd& x)
 
 	Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(M_y.rows(),M_u.cols());
 	result << M_y, Z, Z.transpose(), M_u;
+
+	return result;
+}
+
+
+
+Eigen::MatrixXd ODEopt::cs_c_yy(const Eigen::VectorXd& x, const Eigen::VectorXd& p)
+{
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_y_, dim_y_*(N_grid_-1)*N_col_ + dim_y_);
+
+
+	for(int i = 0; i < N_grid_-1;i++)
+	{
+		for(int j = 1;j<N_col_;j++)
+		{
+			result.block(i*dim_y_*N_col_ + j*dim_y_,i*dim_y_*N_col_ + j*dim_y_,dim_y_,dim_y_)
+					= pdyyf_(get_y_ij(i,j,p),get_y_ij(i,j,x),get_u_ij(i,j,x));
+		}
+	}
+
+	return result;
+}
+
+Eigen::MatrixXd ODEopt::cs_c_uu(const Eigen::VectorXd& x, const Eigen::VectorXd& p)
+{
+	{
+		Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*(N_grid_-1)*N_col_, dim_u_*(N_grid_-1)*N_col_);
+
+
+		for(int i = 0; i < N_grid_-1;i++)
+		{
+			for(int j = 1;j<N_col_;j++)
+			{
+				result.block(i*dim_u_*N_col_ + j*dim_u_,i*dim_u_*N_col_ + j*dim_u_,dim_u_,dim_u_)
+						= pduuf_(get_y_ij(i,j,p),get_y_ij(i,j,x),get_u_ij(i,j,x));
+			}
+		}
+
+		return result;
+	}
+}
+
+Eigen::MatrixXd ODEopt::cs_c_uy(const Eigen::VectorXd& x, const Eigen::VectorXd& p)
+{
+	{
+		Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_y_, dim_u_*(N_grid_-1)*N_col_);
+
+
+		for(int i = 0; i < N_grid_-1;i++)
+		{
+			for(int j = 1;j<N_col_;j++)
+			{
+				result.block(i*dim_y_*N_col_ + j*dim_y_,i*dim_u_*N_col_ + j*dim_u_,dim_y_,dim_u_)
+						= pduyf_(get_y_ij(i,j,p),get_y_ij(i,j,x),get_u_ij(i,j,x));
+			}
+		}
+
+		return result;
+	}
+}
+
+
+
+Eigen::MatrixXd ODEopt::cs_c_secDerivative(const Eigen::VectorXd& x, const Eigen::VectorXd& p)
+{
+	Eigen::MatrixXd c_yy = ODEopt::cs_c_yy(x,p);
+	Eigen::MatrixXd c_uy = ODEopt::cs_c_uy(x,p);
+	Eigen::MatrixXd c_uu = ODEopt::cs_c_uu(x,p);
+
+	Eigen::MatrixXd result(c_yy.rows()+c_uy.cols(), c_yy.rows() + c_uy.cols());
+	result << c_yy, c_uy, c_uy.transpose(), c_uu;
 
 	return result;
 }
