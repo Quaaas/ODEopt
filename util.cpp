@@ -114,20 +114,29 @@ Eigen::MatrixXd diffLocalOperator(const Eigen::VectorXd &c, int dim_y)
 	return result;
 }
 
-Eigen::MatrixXd diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y)
+Eigen::SparseMatrix<double> diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y)
 {
 
 	int s = c.size();
 	int N = grid.size();
-	Eigen::MatrixXd result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
-	result = Eigen::MatrixXd::Zero((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	//Eigen::MatrixXd result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	//result = Eigen::MatrixXd::Zero((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
+
 	double tau = 0;
 
 	for(int i=0;i<N-1;i++)
 	{
 		tau = grid[i+1] -grid[i];
-		result.block(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y) = (1/tau)*diffLocalOperator(c,dim_y);
+		//result.block(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y) = (1./tau)*diffLocalOperator(c,dim_y);
+		tempTripletList = localTripletList(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y, (1./tau)*diffLocalOperator(c,dim_y));
+		tripletList.insert(tripletList.end(),tempTripletList.begin(), tempTripletList.end());
 	}
+
+	Eigen::SparseMatrix<double> result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	result.setFromTriplets(tripletList.begin(), tripletList.end());
 
 	return result;
 
@@ -291,4 +300,54 @@ std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<doub
 }
 
 
+std::vector<Eigen::Triplet<double>> blockOperatorCol(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B)
+{
 
+	typedef Eigen::Triplet<double> T;
+
+	std::vector<T> tripletList;
+
+	for (int k=0; k< A.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< B.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+		{
+			tripletList.push_back(T(A.rows() + it.row(),it.col(),it.value()));
+		}
+	}
+
+	return tripletList;
+}
+
+std::vector<Eigen::Triplet<double>> blockOperatorRow(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B)
+{
+
+	typedef Eigen::Triplet<double> T;
+
+	std::vector<T> tripletList;
+
+	for (int k=0; k< A.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< B.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(), A.cols() + it.col(),it.value()));
+		}
+	}
+
+	return tripletList;
+}

@@ -36,7 +36,7 @@ std::function<Vector(Vector,Vector)> dxg = [] (const Vector& x, const Vector& u)
 			d(0) = alpha*2*x(0);
 			d(1) = alpha*2*x(1);
             d(2) = alpha*2*x(2);
-            d(3) = alpha*2*x(3);    
+            d(3) = alpha*2*x(3);
 			return d;
 		};
 
@@ -75,7 +75,7 @@ std::function<Vector(Vector,Vector)> f = [] (const Vector& x, const Vector& u)
 		{
             double k = 0.03;
             double g = 9.81;
-                
+
 			Vector d(4);
 			d(0) = x(1);
 			d(1) = -k*x(1) + g*sin(x(0)) + u(0)*cos(x(0));
@@ -98,7 +98,7 @@ std::function<Matrix(Vector,Vector)> dxf = [] (const Vector& x, const Vector& u)
 		{
             double k = 0.03;
             double g = 9.81;
-                
+
 			Matrix D = Eigen::MatrixXd::Zero(4,4);
 			D(0,1) = 1;
 			D(1,0) = g*cos(x(0)) - u(0)*sin(x(0));
@@ -125,7 +125,7 @@ std::function<Matrix(Vector,Vector,Vector)> pdxxf = [] (const Vector& p, const V
 		{
             double k = 0.03;
             double g = 9.81;
-                
+
 			Matrix D = Eigen::MatrixXd::Zero(4,4);
 			D(0,0) = -p(1)*g*sin(x(0)) - p(1)*u(0)*cos(x(0));
 			return D;
@@ -137,7 +137,7 @@ std::function<Vector(Vector,Vector)> r = [] (const Vector& x, const Vector& y)
 			d(0) = x(0)-1;
 			d(1) = x(1)-1;
 			d(2) = y(0);
-			d(3) = y(1);    
+			d(3) = y(1);
 			return d;
 		};
 */
@@ -145,11 +145,11 @@ std::function<Vector(Vector,Vector)> r = [] (const Vector& x, const Vector& y)
 std::function<Vector(Vector,Vector)> r = [] (const Vector& x, const Vector& y)
 		{
 			Vector d(6);
-			d(0) = x(0)-1.5;
+			d(0) = x(0)-0.5;
 			d(1) = x(1);
 			d(2) = x(2);
 			d(3) = x(3);
-            d(4) = y(0);    
+            d(4) = y(0);
             d(5) = y(2);
 			return d;
 		};
@@ -183,7 +183,7 @@ int main() {
 	int N = 20;
 	std::vector<double> grid(N,0);
 	for(int i = 0;i<N;i++){
-		grid[i] = 1*i*1./(N-1);
+		grid[i] = 2*i*1./(N-1);
 	}
 
 	//Dimensionen
@@ -200,7 +200,7 @@ int main() {
 
 	for(int i = 0; i<y0.size();i++)
 	{
-        y0(i) = 1;
+        y0(i) = 0.21;
 	}
 	for(int i = 0; i<u0.size();i++)
 	{
@@ -209,7 +209,7 @@ int main() {
 
 	for(int i = 0; i<p0.size();i++)
 	{
-		p0(i) = 1;
+		p0(i) = 0;
 	}
 
 	Vector x_init(y0.size() + u0.size() + p0.size());
@@ -257,12 +257,12 @@ int main() {
 //	myfile2 << RHS;
 //	myfile2.close();
 //
-    Eigen::MatrixXd ddC = odeopt.cs_c_secDerivative(x_init,p0);  
-
-	std::ofstream myfile3;
-	myfile3.open ("ddC.txt");
-	myfile3 << ddC;
-	myfile3.close();
+//    Eigen::MatrixXd ddC = odeopt.cs_c_secDerivative(x_init,p0);
+//
+//	std::ofstream myfile3;
+//	myfile3.open ("ddC.txt");
+//	myfile3 << ddC;
+//	myfile3.close();
 
 
 
@@ -274,47 +274,44 @@ int main() {
 
 	std::function<::Eigen::VectorXd(::Eigen::VectorXd)> derivative_f = [&](const ::Eigen::VectorXd& x)
 	{
-		Eigen::VectorXd res = odeopt.cs_f_derivative(x);
-		return res;
+		return odeopt.cs_f_derivative(x);
 	};
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> secDerivative_f = [&](const ::Eigen::VectorXd& x)
 	{
-		return odeopt.cs_f_secDerivative(x);
+		return Eigen::MatrixXd(odeopt.cs_f_secDerivative(x));
 	};
 
 	std::function<::Eigen::VectorXd(::Eigen::VectorXd)> value_c = [&](const ::Eigen::VectorXd& x)
 	{
-		Eigen::VectorXd res = odeopt.cs_c(x);
-		return res;
+		return odeopt.cs_c(x);
 	 };
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> derivative_c = [&](const ::Eigen::VectorXd& x)   // c'(x)
 	{
-	    return odeopt.cs_c_derivative(x);
+	    return Eigen::MatrixXd(odeopt.cs_c_derivative(x));
 	};
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd, ::Eigen::VectorXd)> secDerivative_c = [&](const ::Eigen::VectorXd& x, const ::Eigen::VectorXd& p)
 	{
-		Eigen::MatrixXd c_xx = odeopt.cs_c_secDerivative(x,p);
-	    return c_xx;
+	    return Eigen::MatrixXd(odeopt.cs_c_secDerivative(x,p));
 	};
 
 	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> gramian = [&](const ::Eigen::VectorXd& x)
 	{
-	    return odeopt.cs_M(x);
+	    return Eigen::MatrixXd(odeopt.cs_M(x));
 	};
 
-    std::cout << "value_f:  "  << value_f(x_init) << std::endl;
-    
-    std::cout << "derivative_f:     "  << derivative_f(x_init).rows() << "   "  << derivative_f(x_init).cols() << std::endl;
-
-    std::cout << "secDerivative_f:     "  << secDerivative_f(x_init).rows() << "   "  << secDerivative_f(x_init).cols() << std::endl;
-
-    std::cout << "value_c:     "  << value_c(x_init).rows() << "   "  << value_c(x_init).cols() << std::endl;
-
-    std::cout << "derivative_c_u:     "  <<  odeopt.cs_c_u(x_init).rows() << "   "  << odeopt.cs_c_u(x_init).cols() << std::endl;
-    std::cout << "derivative_c_y:     "  <<  odeopt.cs_c_y(x_init).rows() << "   "  << odeopt.cs_c_y(x_init).cols() << std::endl;
+//    std::cout << "value_f:  "  << value_f(x_init) << std::endl;
+//
+//    std::cout << "derivative_f:     "  << derivative_f(x_init).rows() << "   "  << derivative_f(x_init).cols() << std::endl;
+//
+//    std::cout << "secDerivative_f:     "  << secDerivative_f(x_init).rows() << "   "  << secDerivative_f(x_init).cols() << std::endl;
+//
+//    std::cout << "value_c:     "  << value_c(x_init).rows() << "   "  << value_c(x_init).cols() << std::endl;
+//
+//    std::cout << "derivative_c_u:     "  <<  odeopt.cs_c_u(x_init).rows() << "   "  << odeopt.cs_c_u(x_init).cols() << std::endl;
+//    std::cout << "derivative_c_y:     "  <<  odeopt.cs_c_y(x_init).rows() << "   "  << odeopt.cs_c_y(x_init).cols() << std::endl;
   //  std::cout << << << std::endl;
 
  //   std::cout << << << std::endl;
