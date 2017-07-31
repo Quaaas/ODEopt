@@ -270,10 +270,13 @@ Eigen::VectorXd ODEopt::cs_f_derivative(const Eigen::VectorXd& x)
 	return result;
 }
 
-Eigen::MatrixXd ODEopt::cs_J_yy(const Eigen::VectorXd& x)
+Eigen::SparseMatrix<double> ODEopt::cs_J_yy(const Eigen::VectorXd& x)
 {
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_ ,dim_y_*N_col_*(N_grid_-1) + dim_y_);
+	//Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_ ,dim_y_*N_col_*(N_grid_-1) + dim_y_);
 	std::vector<Eigen::MatrixXd> G;
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int k =0;k<N_col_;k++)
 	{
@@ -334,15 +337,26 @@ Eigen::MatrixXd ODEopt::cs_J_yy(const Eigen::VectorXd& x)
 			G[k] = dyyg_(X_b[k],U_b[k]);
 		}
 
-		result.block(i*N_col_*dim_y_,i*N_col_*dim_y_,dim_y_*N_col_,dim_y_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+		//result.block(i*N_col_*dim_y_,i*N_col_*dim_y_,dim_y_*N_col_,dim_y_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+
+		tempTripletList = localTripletList(i*N_col_*dim_y_,i*N_col_*dim_y_,dim_y_*N_col_,dim_y_*N_col_, Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b));
+		tripletList.insert(tripletList.end(),tempTripletList.begin(), tempTripletList.end());
 	}
-	return result;
+
+
+	Eigen::SparseMatrix<double> mat(dim_y_*N_col_*(N_grid_-1) + dim_y_ ,dim_y_*N_col_*(N_grid_-1) + dim_y_);
+	mat.setFromTriplets(tripletList.begin(), tripletList.end());
+
+	return mat;
 }
 
-Eigen::MatrixXd ODEopt::cs_J_uu(const Eigen::VectorXd& x)
+Eigen::SparseMatrix<double> ODEopt::cs_J_uu(const Eigen::VectorXd& x)
 {
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*N_col_*(N_grid_-1),dim_u_*N_col_*(N_grid_-1));
+	//Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*N_col_*(N_grid_-1),dim_u_*N_col_*(N_grid_-1));
 	std::vector<Eigen::MatrixXd> G;
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int k =0;k<N_col_;k++)
 	{
@@ -403,17 +417,24 @@ Eigen::MatrixXd ODEopt::cs_J_uu(const Eigen::VectorXd& x)
 			G[k] = duug_(X_b[k],U_b[k]);
 		}
 
-		result.block(i*N_col_*dim_u_,i*N_col_*dim_u_,dim_u_*N_col_,dim_u_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
-
+		//result.block(i*N_col_*dim_u_,i*N_col_*dim_u_,dim_u_*N_col_,dim_u_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+		tempTripletList = localTripletList(i*N_col_*dim_u_,i*N_col_*dim_u_,dim_u_*N_col_,dim_u_*N_col_, Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b));
+		tripletList.insert(tripletList.end(),tempTripletList.begin(), tempTripletList.end());
 	}
 
-	return result;
+	Eigen::SparseMatrix<double> mat(dim_u_*N_col_*(N_grid_-1),dim_u_*N_col_*(N_grid_-1));
+	mat.setFromTriplets(tripletList.begin(), tripletList.end());
+
+	return mat;
 }
 
-Eigen::MatrixXd ODEopt::cs_J_uy(const Eigen::VectorXd& x)
+Eigen::SparseMatrix<double> ODEopt::cs_J_uy(const Eigen::VectorXd& x)
 {
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_,dim_u_*N_col_*(N_grid_-1));
+	//Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_,dim_u_*N_col_*(N_grid_-1));
 	std::vector<Eigen::MatrixXd> G;
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int k =0;k<N_col_;k++)
 	{
@@ -474,23 +495,34 @@ Eigen::MatrixXd ODEopt::cs_J_uy(const Eigen::VectorXd& x)
 			G[k] = dyug_(X_b[k],U_b[k]);
 		}
 
-		result.block(i*N_col_*dim_y_,i*N_col_*dim_u_,dim_y_*N_col_,dim_u_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
+		//result.block(i*N_col_*dim_y_,i*N_col_*dim_u_,dim_y_*N_col_,dim_u_*N_col_) = Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b);
 
+		tempTripletList = localTripletList(i*N_col_*dim_y_,i*N_col_*dim_u_,dim_y_*N_col_,dim_u_*N_col_, Polynomial::intLocalOperator(grid_[i+1]-grid_[i],G,b));
+		tripletList.insert(tripletList.end(),tempTripletList.begin(), tempTripletList.end());
 	}
 
-	return result;
+	Eigen::SparseMatrix<double> mat(dim_y_*N_col_*(N_grid_-1) + dim_y_,dim_u_*N_col_*(N_grid_-1));
+	mat.setFromTriplets(tripletList.begin(), tripletList.end());
+
+	return mat;
+
 }
 
 Eigen::MatrixXd ODEopt::cs_f_secDerivative(const Eigen::VectorXd& x)
 {
-	Eigen::MatrixXd J_yy = ODEopt::cs_J_yy(x);
-	Eigen::MatrixXd J_uy = ODEopt::cs_J_uy(x);
-	Eigen::MatrixXd J_uu = ODEopt::cs_J_uu(x);
+	Eigen::SparseMatrix<double> J_yy = ODEopt::cs_J_yy(x);
+	Eigen::SparseMatrix<double> J_uy = ODEopt::cs_J_uy(x);
+	Eigen::SparseMatrix<double> J_uu = ODEopt::cs_J_uu(x);
 
-	Eigen::MatrixXd result(J_yy.rows()+J_uy.cols(), J_yy.rows() + J_uy.cols());
-	result << J_yy, J_uy, J_uy.transpose(), J_uu;
+	Eigen::SparseMatrix<double> result(J_yy.rows()+J_uy.cols(), J_yy.rows() + J_uy.cols());
 
-	return result;
+	auto triplets = blockOperator(J_yy,J_uy,J_uy.transpose(), J_uu);
+	result.setFromTriplets(triplets.begin(),triplets.end());
+
+
+	//result << J_yy, J_uy, J_uy.transpose(), J_uu;
+
+	return Eigen::MatrixXd(result);
 
 	//return Eigen::MatrixXd::Zero(2,2);
 }
@@ -534,6 +566,8 @@ Eigen::MatrixXd ODEopt::cs_c_y(const Eigen::VectorXd& x)
 	Eigen::MatrixXd result(dim_y_*(N_grid_-1)*N_col_ + dim_r_, dim_y_*(N_grid_-1)*N_col_ + dim_y_);
 	result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_r_, dim_y_*(N_grid_-1)*N_col_ + dim_y_);
 
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	std::vector<Eigen::MatrixXd> F;
 
@@ -575,6 +609,9 @@ Eigen::MatrixXd ODEopt::cs_c_u(const Eigen::VectorXd& x)
 	Eigen::MatrixXd result(dim_y_*(N_grid_-1)*N_col_ + dim_r_, dim_u_*(N_grid_-1)*N_col_);
 	result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_r_, dim_u_*(N_grid_-1)*N_col_);
 
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
+
 	for(int i = 0; i < N_grid_-1;i++)
 	{
 		for(int j = 1;j<N_col_;j++)
@@ -598,6 +635,9 @@ Eigen::MatrixXd ODEopt::cs_M_y(const Eigen ::VectorXd& x)
 {
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*N_col_*(N_grid_-1) + dim_y_ ,dim_y_*N_col_*(N_grid_-1) + dim_y_);
 	std::vector<Eigen::MatrixXd> G;
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int k =0;k<N_col_;k++)
 	{
@@ -624,6 +664,9 @@ Eigen::MatrixXd ODEopt::cs_M_u(const Eigen::VectorXd& x)
 {
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*N_col_*(N_grid_-1),dim_u_*N_col_*(N_grid_-1));
 	std::vector<Eigen::MatrixXd> G;
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int k =0;k<N_col_;k++)
 	{
@@ -667,6 +710,8 @@ Eigen::MatrixXd ODEopt::cs_c_yy(const Eigen::VectorXd& x, const Eigen::VectorXd&
 {
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_y_, dim_y_*(N_grid_-1)*N_col_ + dim_y_);
 
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
 
 	for(int i = 0; i < N_grid_-1;i++)
 	{
@@ -685,6 +730,8 @@ Eigen::MatrixXd ODEopt::cs_c_uu(const Eigen::VectorXd& x, const Eigen::VectorXd&
 	{
 		Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_u_*(N_grid_-1)*N_col_, dim_u_*(N_grid_-1)*N_col_);
 
+		std::vector<Eigen::Triplet<double>> tripletList;
+		std::vector<Eigen::Triplet<double>> tempTripletList;
 
 		for(int i = 0; i < N_grid_-1;i++)
 		{
@@ -704,6 +751,8 @@ Eigen::MatrixXd ODEopt::cs_c_uy(const Eigen::VectorXd& x, const Eigen::VectorXd&
 	{
 		Eigen::MatrixXd result = Eigen::MatrixXd::Zero(dim_y_*(N_grid_-1)*N_col_ + dim_y_, dim_u_*(N_grid_-1)*N_col_);
 
+		std::vector<Eigen::Triplet<double>> tripletList;
+		std::vector<Eigen::Triplet<double>> tempTripletList;
 
 		for(int i = 0; i < N_grid_-1;i++)
 		{

@@ -359,8 +359,7 @@ int main() {
     myfile4.open ("RESULT_PENDEL.txt");
     myfile4 << x_init;
     myfile4.close();
-//
-//
-//    myfile4 << x << std::endl;
+
+
 
 }

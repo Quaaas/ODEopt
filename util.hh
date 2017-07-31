@@ -5,6 +5,7 @@
  *      Author: sebastian
  */
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
 #include <vector>
 #include <iostream>
 
@@ -36,3 +37,10 @@ Eigen::VectorXd intW_j(int j, double tau, const std::vector<Eigen::VectorXd>& g,
 
 Eigen::VectorXd intLocalOperator_lin(double tau, const std::vector<Eigen::VectorXd>& g , const Eigen::VectorXd &c);
 }
+
+
+
+std::vector<Eigen::Triplet<double>> localTripletList(int i, int j, int n, int m, const Eigen::MatrixXd&);
+
+std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&,
+												  const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&);

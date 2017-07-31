@@ -100,9 +100,9 @@ public:
 
 	Eigen::VectorXd cs_f_y(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_u(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_J_uu(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_J_yy(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_J_uy(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_J_uu(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_J_yy(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_J_uy(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_y(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_c_u(const Eigen::VectorXd& x);
 	Eigen::MatrixXd cs_M_y(const Eigen::VectorXd& x);

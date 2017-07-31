@@ -227,3 +227,68 @@ Eigen::VectorXd intLocalOperator_lin(double tau, const std::vector<Eigen::Vector
 }
 
 }
+
+
+std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int m, const Eigen::MatrixXd& M)
+{
+	typedef Eigen::Triplet<double> T;
+
+	std::vector<T> tripletList;
+	for(int i = 0; i < n; i++)
+	{
+		for(int j = 0; j < m; j++)
+		{
+			tripletList.push_back(T(_i+i,_j+j,M(i,j)));
+		}
+	}
+
+	return tripletList;
+}
+
+
+
+std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B,
+												  const Eigen::SparseMatrix<double>& C,const Eigen::SparseMatrix<double>& D)
+{
+
+	typedef Eigen::Triplet<double> T;
+
+	std::vector<T> tripletList;
+
+	for (int k=0; k< A.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< B.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),A.cols() + it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< C.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(C,k); it; ++it)
+		{
+			tripletList.push_back(T(A.rows() + it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< D.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(D,k); it; ++it)
+		{
+			tripletList.push_back(T(A.rows() + it.row(),A.cols() + it.col(),it.value()));
+		}
+	}
+
+	return tripletList;
+}
+
+
+
