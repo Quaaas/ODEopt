@@ -6,6 +6,7 @@
  */
 
 #include "util.hh"
+#include <ctime>
 
 namespace Polynomial{
 
@@ -241,8 +242,11 @@ Eigen::VectorXd intLocalOperator_lin(double tau, const std::vector<Eigen::Vector
 std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int m, const Eigen::MatrixXd& M)
 {
 	typedef Eigen::Triplet<double> T;
-
+ 
 	std::vector<T> tripletList;
+
+    tripletList.reserve(m*n);
+
 	for(int i = 0; i < n; i++)
 	{
 		for(int j = 0; j < m; j++)
@@ -250,6 +254,8 @@ std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int 
 			tripletList.push_back(T(_i+i,_j+j,M(i,j)));
 		}
 	}
+
+
 
 	return tripletList;
 }
@@ -259,10 +265,11 @@ std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int 
 std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B,
 												  const Eigen::SparseMatrix<double>& C,const Eigen::SparseMatrix<double>& D)
 {
-
+    
 	typedef Eigen::Triplet<double> T;
 
 	std::vector<T> tripletList;
+    tripletList.reserve(A.nonZeros() + B.nonZeros() + C.nonZeros() + D.nonZeros());
 
 	for (int k=0; k< A.outerSize(); ++k)
 	{
@@ -296,6 +303,7 @@ std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<doub
 		}
 	}
 
+
 	return tripletList;
 }
 
@@ -306,7 +314,7 @@ std::vector<Eigen::Triplet<double>> blockOperatorCol(const Eigen::SparseMatrix<d
 	typedef Eigen::Triplet<double> T;
 
 	std::vector<T> tripletList;
-
+    tripletList.reserve(A.nonZeros() + B.nonZeros());
 	for (int k=0; k< A.outerSize(); ++k)
 	{
 		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
@@ -330,9 +338,9 @@ std::vector<Eigen::Triplet<double>> blockOperatorRow(const Eigen::SparseMatrix<d
 {
 
 	typedef Eigen::Triplet<double> T;
-
+    
 	std::vector<T> tripletList;
-
+    tripletList.reserve(A.nonZeros() + B.nonZeros());
 	for (int k=0; k< A.outerSize(); ++k)
 	{
 		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)

@@ -1,5 +1,6 @@
 #include "ODEopt.hh"
 #include <fstream>
+#include <ctime>
 //Constructor
 
 ODEopt::ODEopt(
@@ -68,11 +69,11 @@ double ODEopt::cs_f(const Eigen::VectorXd& x)
 
 	for(int i = 0; i < N_col_;i++)
 	{
-		X.push_back(Eigen::VectorXd::Zero(dim_y_));
-		X_b.push_back(Eigen::VectorXd::Zero(dim_y_));
-		U.push_back(Eigen::VectorXd::Zero(dim_u_));
-		U_b.push_back(Eigen::VectorXd::Zero(dim_u_));
-		Eval.push_back(Polynomial::evalOperator(b(i),c_));
+    X.push_back(Eigen::VectorXd::Zero(dim_y_));
+	X_b.push_back(Eigen::VectorXd::Zero(dim_y_));
+	U.push_back(Eigen::VectorXd::Zero(dim_u_));
+	U_b.push_back(Eigen::VectorXd::Zero(dim_u_));
+	Eval.push_back(Polynomial::evalOperator(b(i),c_));
 	}
 
 	//Iteration through grid

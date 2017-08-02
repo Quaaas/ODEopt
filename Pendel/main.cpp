@@ -277,7 +277,7 @@ int main() {
 		return odeopt.cs_f_derivative(x);
 	};
 
-	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> secDerivative_f = [&](const ::Eigen::VectorXd& x)
+	std::function<Eigen::MatrixXd(::Eigen::VectorXd)> secDerivative_f = [&](const ::Eigen::VectorXd& x)
 	{
 		return Eigen::MatrixXd(odeopt.cs_f_secDerivative(x));
 	};
@@ -287,17 +287,17 @@ int main() {
 		return odeopt.cs_c(x);
 	 };
 
-	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> derivative_c = [&](const ::Eigen::VectorXd& x)   // c'(x)
+	std::function<Eigen::MatrixXd(::Eigen::VectorXd)> derivative_c = [&](const ::Eigen::VectorXd& x)   // c'(x)
 	{
 	    return Eigen::MatrixXd(odeopt.cs_c_derivative(x));
 	};
 
-	std::function<::Eigen::MatrixXd(::Eigen::VectorXd, ::Eigen::VectorXd)> secDerivative_c = [&](const ::Eigen::VectorXd& x, const ::Eigen::VectorXd& p)
+	std::function<Eigen::MatrixXd(::Eigen::VectorXd, ::Eigen::VectorXd)> secDerivative_c = [&](const ::Eigen::VectorXd& x, const ::Eigen::VectorXd& p)
 	{
 	    return Eigen::MatrixXd(odeopt.cs_c_secDerivative(x,p));
 	};
 
-	std::function<::Eigen::MatrixXd(::Eigen::VectorXd)> gramian = [&](const ::Eigen::VectorXd& x)
+	std::function<Eigen::MatrixXd(::Eigen::VectorXd)> gramian = [&](const ::Eigen::VectorXd& x)
 	{
 	    return Eigen::MatrixXd(odeopt.cs_M(x));
 	};
