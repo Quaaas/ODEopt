@@ -85,12 +85,14 @@ public:
 	double cs_f(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_derivative(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_f_derivative_test(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_f_secDerivative(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_f_secDerivative(const Eigen::VectorXd& x);
 	Eigen::VectorXd cs_c(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_c_derivative(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_c_secDerivative(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
-	Eigen::MatrixXd cs_gramian(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_M(const Eigen:: VectorXd& x);
+	Eigen::SparseMatrix<double> cs_c_derivative(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_c_secDerivative(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::SparseMatrix<double> cs_M(const Eigen:: VectorXd& x);
+
+
+
 	// auxiliary functions
 
 	// get y_ij, both indices starting at 0
@@ -103,13 +105,13 @@ public:
 	Eigen::SparseMatrix<double> cs_J_uu(const Eigen::VectorXd& x);
 	Eigen::SparseMatrix<double> cs_J_yy(const Eigen::VectorXd& x);
 	Eigen::SparseMatrix<double> cs_J_uy(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_c_y(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_c_u(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_M_y(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_M_u(const Eigen::VectorXd& x);
-	Eigen::MatrixXd cs_c_yy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
-	Eigen::MatrixXd cs_c_uu(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
-	Eigen::MatrixXd cs_c_uy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::SparseMatrix<double> cs_c_y(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_c_u(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double>  cs_M_y(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double>  cs_M_u(const Eigen::VectorXd& x);
+	Eigen::SparseMatrix<double> cs_c_yy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::SparseMatrix<double> cs_c_uu(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
+	Eigen::SparseMatrix<double> cs_c_uy(const Eigen::VectorXd& x, const Eigen::VectorXd& p);
 
 };
 

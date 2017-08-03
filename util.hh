@@ -26,7 +26,7 @@ Eigen::MatrixXd collocationLocal(const std::vector<Eigen::MatrixXd>& F, const Ei
 //Erzeugt Differentialoperator
 Eigen::MatrixXd diffLocalOperator(const Eigen::VectorXd &c, int dim_y);
 
-Eigen::MatrixXd diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y);
+Eigen::SparseMatrix<double> diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y);
 
 //Hilfsfunktion für Integraloperatoren
 Eigen::MatrixXd intW_ij(int i, int j, double tau, const std::vector<Eigen::MatrixXd>& G, const Eigen::VectorXd &c);
@@ -44,3 +44,8 @@ std::vector<Eigen::Triplet<double>> localTripletList(int i, int j, int n, int m,
 
 std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&,
 												  const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&);
+
+std::vector<Eigen::Triplet<double>> blockOperatorCol(const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&);
+
+std::vector<Eigen::Triplet<double>> blockOperatorRow(const Eigen::SparseMatrix<double>&,const Eigen::SparseMatrix<double>&);
+

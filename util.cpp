@@ -6,6 +6,7 @@
  */
 
 #include "util.hh"
+#include <ctime>
 
 namespace Polynomial{
 
@@ -114,20 +115,29 @@ Eigen::MatrixXd diffLocalOperator(const Eigen::VectorXd &c, int dim_y)
 	return result;
 }
 
-Eigen::MatrixXd diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y)
+Eigen::SparseMatrix<double> diffOperator(const std::vector<double> &grid, const Eigen::VectorXd &c, int dim_y)
 {
 
 	int s = c.size();
 	int N = grid.size();
-	Eigen::MatrixXd result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
-	result = Eigen::MatrixXd::Zero((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	//Eigen::MatrixXd result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	//result = Eigen::MatrixXd::Zero((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+
+	std::vector<Eigen::Triplet<double>> tripletList;
+	std::vector<Eigen::Triplet<double>> tempTripletList;
+
 	double tau = 0;
 
 	for(int i=0;i<N-1;i++)
 	{
 		tau = grid[i+1] -grid[i];
-		result.block(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y) = (1/tau)*diffLocalOperator(c,dim_y);
+		//result.block(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y) = (1./tau)*diffLocalOperator(c,dim_y);
+		tempTripletList = localTripletList(i*s*dim_y,i*s*dim_y,s*dim_y,s*dim_y, (1./tau)*diffLocalOperator(c,dim_y));
+		tripletList.insert(tripletList.end(),tempTripletList.begin(), tempTripletList.end());
 	}
+
+	Eigen::SparseMatrix<double> result((N-1)*s*dim_y + dim_y,(N-1)*s*dim_y + dim_y);
+	result.setFromTriplets(tripletList.begin(), tripletList.end());
 
 	return result;
 
@@ -232,8 +242,11 @@ Eigen::VectorXd intLocalOperator_lin(double tau, const std::vector<Eigen::Vector
 std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int m, const Eigen::MatrixXd& M)
 {
 	typedef Eigen::Triplet<double> T;
-
+ 
 	std::vector<T> tripletList;
+
+    tripletList.reserve(m*n);
+
 	for(int i = 0; i < n; i++)
 	{
 		for(int j = 0; j < m; j++)
@@ -241,6 +254,8 @@ std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int 
 			tripletList.push_back(T(_i+i,_j+j,M(i,j)));
 		}
 	}
+
+
 
 	return tripletList;
 }
@@ -250,10 +265,11 @@ std::vector<Eigen::Triplet<double>> localTripletList(int _i, int _j, int n, int 
 std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B,
 												  const Eigen::SparseMatrix<double>& C,const Eigen::SparseMatrix<double>& D)
 {
-
+    
 	typedef Eigen::Triplet<double> T;
 
 	std::vector<T> tripletList;
+    tripletList.reserve(A.nonZeros() + B.nonZeros() + C.nonZeros() + D.nonZeros());
 
 	for (int k=0; k< A.outerSize(); ++k)
 	{
@@ -287,8 +303,59 @@ std::vector<Eigen::Triplet<double>> blockOperator(const Eigen::SparseMatrix<doub
 		}
 	}
 
+
 	return tripletList;
 }
 
 
+std::vector<Eigen::Triplet<double>> blockOperatorCol(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B)
+{
 
+	typedef Eigen::Triplet<double> T;
+
+	std::vector<T> tripletList;
+    tripletList.reserve(A.nonZeros() + B.nonZeros());
+	for (int k=0; k< A.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< B.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+		{
+			tripletList.push_back(T(A.rows() + it.row(),it.col(),it.value()));
+		}
+	}
+
+	return tripletList;
+}
+
+std::vector<Eigen::Triplet<double>> blockOperatorRow(const Eigen::SparseMatrix<double>& A,const Eigen::SparseMatrix<double>& B)
+{
+
+	typedef Eigen::Triplet<double> T;
+    
+	std::vector<T> tripletList;
+    tripletList.reserve(A.nonZeros() + B.nonZeros());
+	for (int k=0; k< A.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(),it.col(),it.value()));
+		}
+	}
+
+	for (int k=0; k< B.outerSize(); ++k)
+	{
+		for (Eigen::SparseMatrix<double>::InnerIterator it(B,k); it; ++it)
+		{
+			tripletList.push_back(T(it.row(), A.cols() + it.col(),it.value()));
+		}
+	}
+
+	return tripletList;
+}
