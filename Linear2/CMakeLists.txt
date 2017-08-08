@@ -11,11 +11,12 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package(Spacy REQUIRED)
 # include_directories(${Spacy_INCLUDE_DIR})
 
-include_directories("/home/sebastian/Documents/Masterarbeit/optimal_control_spacy/Spacy/")
+include_directories("/home/sebastian/Documents/Masterarbeit/optimal_control_spacy/Spacy")
 add_definitions(${Spacy_CXX_FLAGS})
 
+
 # Executable
-add_executable(run main.cpp ../util.hh ../util.cpp ../ODEopt.hh ../ODEopt.cpp ../ODEoptVector.hh ../ODEoptVector.cpp)
+add_executable(run main.cpp ../util.hh ../util.cpp ../ODEopt.hh ../ODEopt.cpp ../ODEoptVector.cpp ../ODEoptVector.hh)
 
 # Target libraries
 #target_link_libraries(run ${Spacy_LIBRARIES})
