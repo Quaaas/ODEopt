@@ -16,6 +16,7 @@
 #include "../ODEoptVector.hh"
 #include <fstream>
 #include <ctime>
+#include <string>
 
 #define EIGEN_INITIALIZE_MATRICES_BY_ZERO
 
@@ -130,14 +131,41 @@ std::function<Matrix(Vector,Vector)> dyr = [] (const Vector& x, const Vector& y)
 int main() {
 	//Kollokationspunkte
 	Vector c(3);
-	c << 0,(1.0/2-sqrt(3.0)/6),(1.0/2+sqrt(3.0)/6);
+	c << 0,(1.0/2-sqrt(3)/6),(1.0/2+sqrt(3)/6);
 
+	int b = 5;
 	//Gitter
-	int N = 10;
+	// int N = 20;
+	// int N_1 = 10;
+	//
+	// std::string st = std::to_string(N) +"_" + std::to_string(N_1);
+	//
+	// std::vector<double> grid(N,0);
+	// for(int i = 0;i<N_1;i++){
+	// 	grid[i] = (double) b*i*0.1/(N_1-1);
+	// }
+	//
+	// for(int i = 0;i<N-N_1+1;i++){
+	// 	grid[N_1 + i - 1] = (double) (b*0.1 + b*i*0.9/(N-N_1));
+	// }
+	//
+	// for(int i = 0; i < grid.size();i++)
+	// 	{
+	// 		std::cout << grid[i] << std::endl;
+	// 	}
+
+
+	//Gitter äquvidistant
+	int N = 20;
+
+
+	std::string st = std::to_string(N) + "_dense";
+
+
+
 	std::vector<double> grid(N,0);
 	for(int i = 0;i<N;i++){
-
-		grid[i] = (double) i*1/(N-1);
+		grid[i] = (double) b*i*1./(N-1);
 	}
 
 	//Dimensionen
@@ -231,37 +259,43 @@ int main() {
 	Spacy::Rn::copy(x_init,x0);
 
 	auto cs = Spacy::CompositeStep::AffineCovariantSolver( L_N , L_T , domain );
-	cs.setRelativeAccuracy(1e-6);
+	cs.setRelativeAccuracy(1e-12);
+	cs.set_eps(1e-12);
 	cs.setVerbosityLevel(2);
 	cs.setMaxSteps(100);
     auto result = cs(x0);
     Spacy::Rn::copy(result,x_init);
 //
 
-    std::ofstream myfile;
-    myfile.open ("x_spacy_10.txt");
-    myfile << x_init;
-    myfile.close();
-
-	std::ofstream myfile_grid;
-	myfile_grid.open ("x_spacy_grid_10.txt");
-	for(int i = 0; i < grid.size(); i ++)
-	{
-		myfile_grid << grid[i] << std::endl;
-	}
-	myfile_grid.close();
+    // std::ofstream myfile;
+    // myfile.open ("x_spacy.txt");
+    // myfile << x_init;
+    // myfile.close();
+	//
+	// std::ofstream myfile_grid;
+	// myfile_grid.open ("x_spacy_grid.txt");
+	// for(int i = 0; i < grid.size(); i ++)
+	// {
+	// 	myfile_grid << grid[i] << std::endl;
+	// }
+	// myfile_grid.close();
 //
 	auto odevector = ODEoptVector(x_init,dim_y,dim_u,dim_r,grid,c);
 
 	std::ofstream myfile1;
 	std::ofstream myfile1_grid;
-	myfile1_grid.open("stetig_grid_10.txt");
-    myfile1.open ("stetig_10.txt");
-	for(int i =0;i<1000-1;i++)
+	std::ofstream myfile1_u;
+
+	myfile1_grid.open("stetig_grid_" + st + ".txt");
+    myfile1.open ("stetig_" + st + ".txt");
+	myfile1_u.open ("stetig_u_" + st + ".txt");
+	for(int i =0;i<2000-1;i++)
 	{
-		myfile1 << odevector.eval_x((double) i*1./(1000-1)) << std::endl;
-		myfile1_grid << (double) i*1./(1000-1) << std::endl;
+		myfile1 << odevector.eval_x((double) b*i*1./(2000-1)) << std::endl;
+		myfile1_u <<  odevector.eval_u((double) b*i*1./(2000-1)) << std::endl;
+		myfile1_grid << (double) b*i*1./(2000-1) << std::endl;
 	}
     myfile1.close();
+	myfile1_u.close();
 	myfile1_grid.close();
 }

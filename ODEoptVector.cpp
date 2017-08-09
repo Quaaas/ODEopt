@@ -18,7 +18,7 @@ ODEoptVector::ODEoptVector(Eigen::VectorXd x,
     for(int i = 0; i < N_col_*(N_grid_-1); i++)
     {
         Y.push_back(x.segment(i*dim_y_, dim_y_));
-        U.push_back(x.segment(N_grid_*dim_y_*N_col_+ dim_y_ + i*dim_u_, dim_u_));
+        U.push_back(x.segment((N_grid_-1)*dim_y_*N_col_+ dim_y_ + i*dim_u_, dim_u_));
     }
   }
 
